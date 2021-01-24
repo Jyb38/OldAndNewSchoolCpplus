@@ -46,7 +46,7 @@ class HolderOld
       m_size = other.m_size;
     }
 
-    HolderOld& operator=(const HolderOld& other)
+    HolderOld& operator=(const HolderOld& other)    // Copy assignment operator
     {
       if(this == &other) return *this;  // (1)
       delete[] m_data;  // (2)
@@ -89,13 +89,13 @@ class Holder
 
     Holder(Holder&& other) noexcept    // <-- rvalue reference in input
     {
-      m_data = other.m_data;   // (1)
+      m_data = other.m_data;   // (1)           // Move constructor
       m_size = other.m_size;
       other.m_data = nullptr;  // (2)
       other.m_size = 0;
     }
 
-    Holder& operator=(const Holder& other)
+    Holder& operator=(const Holder& other)      // Copy assignment operator
     {
       if(this == &other) return *this;  // (1)
       delete[] m_data;  // (2)
@@ -107,7 +107,7 @@ class Holder
 
     Holder& operator=(Holder&& other) noexcept    // <-- rvalue reference in input
     {
-      if (this == &other) return *this;
+      if (this == &other) return *this;         // Move assignment operator
 
       delete[] m_data;         // (1)
 
@@ -189,7 +189,7 @@ void process() {
 
     setChrono0();
     holder h3(createHolder<holder>(arraysSize2)); // move constructor (rvalue in input) (1)
-    showChrono("move constructor (rvalue in input) (1)");
+    showChrono("move constructor (rvalue in input)");
 
     setChrono0();
     h2 = h3;                        // assignment operator (lvalue in input)
@@ -207,9 +207,11 @@ void process() {
 int main()
 {
 
-    cout << "Old  School C++      C89" << endl;
+    cout << endl << endl << "-------------------------------------------------------" << endl;
+    cout << "Old  School C++      C++98" << endl;
     process<HolderOld>();
 
+    cout << endl << endl << "-------------------------------------------------------" << endl;
     cout << "New School C++       C++11" << endl;
     process<Holder>();
 
