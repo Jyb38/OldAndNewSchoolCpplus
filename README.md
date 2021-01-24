@@ -1,5 +1,5 @@
 # OldAndNewSchoolCpplus
-Exec time optimization by going through rvalue references : 
+Exec time optimization by going through rvalue references. 
 The code realizes the timing of standard operations of creation, copy, and assignment for some large objects.
 First one object only handles the Rule of Three as if computed by oldest version of C++  : destructor, copy constructor, copy assignment operator.
 Second object on the other hand implements the so-called Rule of Five  : as before, moreover move constructor and move assignment operator.
@@ -27,7 +27,7 @@ current computation elapsed time : 0.556656s for copy constructor (lvalue in inp
 current computation elapsed time : 0.0227251s for move constructor (rvalue in input)\
 current computation elapsed time : 0.55966s for assignment operator (lvalue in input)\
 current computation elapsed time : 0.162899s for move assignment operator (rvalue in input)\
-current computation elapsed time : 1.30594s for Total computation\
+current computation elapsed time : 1.30594s for Total computation
 
 
 
