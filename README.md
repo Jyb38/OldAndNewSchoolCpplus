@@ -14,7 +14,7 @@ while it is less than one second and an half for the second object to do the sam
 Old  School C++      C++98
 current computation elapsed time : 0s for regular constructor
 current computation elapsed time : 0.432738s for copy constructor (lvalue in input)
-current computation elapsed time : 0.543671s for move constructor (rvalue in input) (1)
+current computation elapsed time : 0.543671s for move constructor (rvalue in input)
 current computation elapsed time : 0.546662s for assignment operator (lvalue in input)
 current computation elapsed time : 7.55863s for move assignment operator (rvalue in input)
 current computation elapsed time : 9.80103s for Total computation
@@ -24,7 +24,7 @@ current computation elapsed time : 9.80103s for Total computation
 New School C++       C++11
 current computation elapsed time : 0s for regular constructor
 current computation elapsed time : 0.556656s for copy constructor (lvalue in input)
-current computation elapsed time : 0.0227251s for move constructor (rvalue in input) (1)
+current computation elapsed time : 0.0227251s for move constructor (rvalue in input)
 current computation elapsed time : 0.55966s for assignment operator (lvalue in input)
 current computation elapsed time : 0.162899s for move assignment operator (rvalue in input)
 current computation elapsed time : 1.30594s for Total computation
