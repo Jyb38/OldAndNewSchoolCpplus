@@ -7,7 +7,20 @@ The program does some operations for the first one object, then it does the same
 And in the mean time, it displays the computation timing for both : we may see this way that the « old school » object is doing things
 much slowly than the « new school » one, and compare such timing though.
 
-As in the result just below, where for the first object, we got some ten seconds as for the total computation time,
+How coding has been written is in no way a pure showcase of what should be done, it has been implemented on the fly in order to show evidence
+of how the C++ compilator makes things happen. No header files, no prototypes, only one « main.cpp » source file that contains it all, declarations and definitions.
+Two classes of object are defined, the old and new schools ones, as described above. 
+
+There is one template function « process() » whose template parameter is the type of object - old or new school one - that is handled by this very process. 
+This way, that is the very same process that is applied on one object and the other, this for valid timing comparisons.
+
+There is also another template function « createHolder() » with object type specified as well, that should instantiate the current object 
+and return such, thus as a temporary variable. Actually, C++ compilator is so powerfull that it is enacting a RVO, means a « Return Value Otimization »
+on its own, and there is no difference in instance assignment process, whatever the current object has or don't have a move constructor. 
+In order to mislead the compilator, the function is creating two local instances, retrieving only one of them depending on some external factor 
+(on this one, it's the current day date, peer / odd).
+
+In the result just below, for the first object, total computation time is some ten seconds long,
 while it is less than one second and an half for the second object to do the same things.
 
 -------------------------------------------------------\
