@@ -16,7 +16,7 @@ This way, that is the very same process that is applied on one object and the ot
 
 There is also another template function « createHolder() » with object type specified as well, that should instantiate the current object 
 and return such, thus as a temporary variable. Actually, C++ compilator is so powerfull that it is enacting a RVO, means a « Return Value Otimization »
-on its own, and there is no difference in instance assignment process, whatever the current object has or doesn't have a move constructor, that is not what we want. 
+on its own, and there is no difference in instance assignment process, whatever the current object has or doesn't have a move constructor, which is not what we want. 
 In order to mislead the compilator and avoid the RVO, the function is creating two local instances, retrieving only one of them depending on some external factor 
 (on this one, it's the current day date, peer / odd).
 
