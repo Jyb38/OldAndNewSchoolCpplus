@@ -9,6 +9,8 @@
 #include <ctime>
 #include <string>
 #include <vector>
+#include <memory>
+#include <functional>
 
 using namespace std;
 
@@ -33,39 +35,40 @@ inline void setChrono0() { vStart.push_back(std::chrono::system_clock::now()); }
 // ================================================================================
 class HolderOld
 {
+    typedef std::unique_ptr<int[]> DataPtr;
+
   public:
 
     HolderOld(int size)         // Constructor
     {
-      m_data = new int[size];
+      m_data = std::make_unique<int[]>(size);
       m_size = size;
     }
 
     HolderOld(const HolderOld& other)     // Copy constructor
     {
-      m_data = new int[other.m_size];  // (1)
-      std::copy(other.m_data, other.m_data + other.m_size, m_data);  // (2)
+      m_data = std::make_unique<int[]>(other.m_size);  // (1)
+      std::copy(other.m_data.get(), other.m_data.get() + other.m_size, m_data.get());  // (2)
       m_size = other.m_size;
     }
 
     HolderOld& operator=(const HolderOld& other)    // Copy assignment operator
     {
       if(this == &other) return *this;  // (1)
-      delete[] m_data;  // (2)
-      m_data = new int[other.m_size];
-      std::copy(other.m_data, other.m_data + other.m_size, m_data);
+      m_data.reset(new int[other.m_size]);  // (2)
+      std::copy(other.m_data.get(), other.m_data.get() + other.m_size, m_data.get());
       m_size = other.m_size;
       return *this;  // (3)
     }
 
     ~HolderOld()                // Destructor
     {
-      delete[] m_data;
+      // smart means nothing to be done :-)
     }
 
   private:
 
-    int*   m_data;
+    DataPtr m_data;
     size_t m_size;
 };
 
@@ -74,62 +77,58 @@ class HolderOld
 // ================================================================================
 class Holder
 {
+    typedef std::unique_ptr<int[]> DataPtr;
+
   public:
 
     Holder(int size)  noexcept       // Constructor
     {
-      m_data = new int[size];
-      m_size = size;
+        m_data = std::make_unique<int[]>(size);
+        m_size = size;
     }
 
     Holder(const Holder& other)     // Copy constructor
     {
-      m_data = new int[other.m_size];  // (1)
-      std::copy(other.m_data, other.m_data + other.m_size, m_data);  // (2)
-      m_size = other.m_size;
+        m_data = std::make_unique<int[]>(other.m_size);  // (1)
+        std::copy(other.m_data.get(), other.m_data.get() + other.m_size, m_data.get());  // (2)
+        m_size = other.m_size;
     }
 
     Holder(Holder&& other) noexcept    // <-- rvalue reference in input
     {
-      m_data = other.m_data;   // (1)           // Move constructor
+      m_data.reset(nullptr);
+      m_data.swap(other.m_data);   // (1)           // Move constructor
       m_size = other.m_size;
-      other.m_data = nullptr;  // (2)
-      other.m_size = 0;
     }
 
     Holder& operator=(const Holder& other)      // Copy assignment operator
     {
-      if(this == &other) return *this;  // (1)
-      delete[] m_data;  // (2)
-      m_data = new int[other.m_size];
-      std::copy(other.m_data, other.m_data + other.m_size, m_data);
-      m_size = other.m_size;
-      return *this;  // (3)
+        if(this == &other) return *this;  // (1)
+        m_data.reset(new int[other.m_size]);  // (2)
+        std::copy(other.m_data.get(), other.m_data.get() + other.m_size, m_data.get());
+        m_size = other.m_size;
+        return *this;  // (3)
     }
 
     Holder& operator=(Holder&& other) noexcept    // <-- rvalue reference in input
     {
       if (this == &other) return *this;         // Move assignment operator
 
-      delete[] m_data;         // (1)
-
-      m_data = other.m_data;   // (2)
+      m_data.reset(nullptr);
+      m_data.swap(other.m_data);
       m_size = other.m_size;
-
-      other.m_data = nullptr;  // (3)
       other.m_size = 0;
-
       return *this;
     }
 
     ~Holder()                // Destructor
     {
-      delete[] m_data;
+      // smart means nothing to be done :-)
     }
 
   private:
 
-    int*   m_data;
+    DataPtr m_data;
     size_t m_size;
 };
 
@@ -140,27 +139,32 @@ class Holder
 
 int const arraysSize0 = 1073741824;
 int const arraysSize1 = 536870912;
-int const arraysSize2 = 268435456;
-int const arraysSize3 = 134217728;
+//int const arraysSize2 = 268435456;
+//int const arraysSize3 = 134217728;
 
 template<class holder>
 holder createHolder(int size)
 {
-// On pourrait se contenter d'avoir la ligne telle quel :
+// One might go ahead with only one coding line like this :
+//
 //    return holder(size);
-// Mais alors dans les 2 cas, "old school" et "new school",
-// le compilateur optimise (Return Value Optimization RVO) et évite de faire un move constructor :
-// - avec une copie de la data du tableau m_data (couteux) dans le cas old school avec une simple référence &
-// - avec une simple affectation de l'@ m_data (rapide) dans le cas new school avec une forwarding reference &&
-// Au lieu de ça, il fait un regular constructor directement dans la variable qui va recevoir le résultat de createHolder.
 //
-// Pour tromper le compilateur afin de passer par le move constructor dans tous les cas, on fait en sorte qu'il ne sache
-// pas à l'avance quel sera le résultat à affecter : ci-dessous, h01 ou h02 ???
+// But so far, on both cases, "old school" and "new school",
+// compilator avoids enacting such a copy/move constructor :
+// - with copy of data from m_data (expensive) on old school case with simple reference &
+// - with simple assignment of m_data pointer (fast) on new school case with rvalue reference &&
 //
-// De cette façon on peut effectivement mesurer la différence de perf du move constructor
-// entre celui du old school (simple réf) et le new school (rvalue forward. ref)
+// Instead of that, the compilator  is optimizing (Return Value Optimization RVO) and is building
+// the function (createHolder) result directly inside the new instance, but on the stack as usual.
 //
-// (On peut aussi inhiber le RVO pour GCC si on est sur Linux, avec le flag -fno-elide-constructors )
+// In order to mislead the compilator, one does so that at compile time, it is unknown
+// which instance to be returned as a result : just below, say, h01 or h02 ???
+//
+// This way, the result is built in the function context, and is to be returned and
+// copied when on the old school constructor, or moved while on the new school one.
+// And difference of performances between both methods may be measured and highlighted so far.
+//
+// (It is possible to disable the RVO on GCC while being on Linux, with compile option -fno-elide-constructors )
 //
 
     time_t t = time(NULL);
@@ -170,10 +174,14 @@ holder createHolder(int size)
            h01(size),
            h02(size);
 
-    if (timePtr->tm_mday % 2)   // selon jour du mois impair ou pair, retourne h01 ou h02
+    setChrono0();
+
+    if (timePtr->tm_mday % 2)   // depending on day of the month, odd or even, returns h01 or h02
         return h01;
     else
         return h02;
+
+//    return holder(size);
 }
 
 template<class holder>
@@ -182,22 +190,22 @@ void process() {
     setChrono0();
 
     setChrono0();
-    holder h1(arraysSize2);                // regular constructor
+    holder h1(arraysSize1);                // regular constructor
     showChrono("regular constructor");
 
     setChrono0();
     holder h2(h1);                  // copy constructor (lvalue in input)
     showChrono("copy constructor (lvalue in input)");
 
-    setChrono0();
-    holder h3(createHolder<holder>(arraysSize2)); // move constructor (rvalue in input) (1)
+    // setChrono0(): in the function
+    holder h3(createHolder<holder>(arraysSize1)); // move constructor (rvalue in input) (1)
     showChrono("move constructor (rvalue in input)");
 
     setChrono0();
     h2 = h3;                        // assignment operator (lvalue in input)
     showChrono("assignment operator (lvalue in input)");
 
-    setChrono0();
+    // setChrono0()): in the function
     h2 = createHolder<holder>(arraysSize1);         // move assignment operator (rvalue in input)
     showChrono("move assignment operator (rvalue in input)");
 
@@ -224,21 +232,21 @@ int main()
 
     // std::move change une lvalue en rvalue
 
-    setChrono0();
     {
         Holder h1(arraysSize0);     // h1 is an lvalue
+        setChrono0();
         Holder h2(h1);              // copy-constructor invoked (because of lvalue in input)
+        showChrono("copy-constructor");
     }
-    showChrono("copy-constructor");
 
-    setChrono0();
     {
         Holder h1(arraysSize0);     // h1 is an lvalue
+        setChrono0();
         Holder h2(std::move(h1));   // move-constructor invoked (because of rvalue in input)
+        showChrono("move-constructor");
 
-        // à ce stade, h1 est perdu, mais peu importe car on est à la fin du bloc de sa portée
+        // there, h1 is lost, whatever, since it's end of bloc hence, end of its data scope
     }
-    showChrono("move-constructor");
 
 
     return 0;
