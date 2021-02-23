@@ -11,8 +11,8 @@ How coding has been written is in no way a pure showcase of what should be done,
 of how the C++ compilator makes things happen. No header files, no prototypes, only one « main.cpp » source file that contains it all, declarations and definitions.
 Two classes of object are defined, the old and new school ones, as described above. 
 
-There is one template function « process() » whose template parameter is the type of object - old or new school one - that is handled by this very process. 
-This way, that is the very same process that is applied on one object and the other, this for valid timing comparisons.
+There is one template function « process() » which template parameter is the type of object - old or new school one - that is handled by this very process. 
+This way, such very same process is applied on one object and another, validating timing comparisons so on.
 
 There is also another template function « createHolder() » with object type specified as well, that should instantiate the current object 
 and return such, thus as a temporary variable. Actually, C++ compilator is so powerfull that it is enacting a RVO, means a « Return Value Otimization »
